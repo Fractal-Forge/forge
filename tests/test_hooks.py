@@ -2,7 +2,7 @@
 
 import pytest
 
-from forge import generate
+from forge import forge
 from forge.exceptions import FailedHookError
 
 CONTEXT = {"project_id": "demo", "marker": "from-context"}
@@ -24,7 +24,7 @@ def test_post_gen_hook_runs_in_project_dir_and_is_rendered(tmp_path):
         encoding="utf-8",
     )
 
-    project_dir = generate(repo, CONTEXT, tmp_path / "out")
+    project_dir = forge(repo, CONTEXT, tmp_path / "out")
 
     assert (project_dir / "hook_output.txt").read_text() == "from-context"
 
@@ -36,7 +36,7 @@ def test_pre_gen_hook_runs(tmp_path):
         encoding="utf-8",
     )
 
-    project_dir = generate(repo, CONTEXT, tmp_path / "out")
+    project_dir = forge(repo, CONTEXT, tmp_path / "out")
 
     assert (project_dir / "pre_marker.txt").exists()
     assert (project_dir / "file.txt").exists()
@@ -50,7 +50,7 @@ def test_failing_hook_raises_and_cleans_up(tmp_path):
     out = tmp_path / "out"
 
     with pytest.raises(FailedHookError):
-        generate(repo, CONTEXT, out)
+        forge(repo, CONTEXT, out)
 
     assert not (out / "demo").exists()
 
@@ -63,7 +63,7 @@ def test_failing_hook_keeps_project_when_asked(tmp_path):
     out = tmp_path / "out"
 
     with pytest.raises(FailedHookError):
-        generate(repo, CONTEXT, out, keep_project_on_failure=True)
+        forge(repo, CONTEXT, out, keep_project_on_failure=True)
 
     assert (out / "demo" / "file.txt").exists()
 
@@ -74,7 +74,7 @@ def test_accept_hooks_false_skips_hooks(tmp_path):
         "import sys\nsys.exit(1)\n", encoding="utf-8"
     )
 
-    project_dir = generate(repo, CONTEXT, tmp_path / "out", accept_hooks=False)
+    project_dir = forge(repo, CONTEXT, tmp_path / "out", accept_hooks=False)
 
     assert (project_dir / "file.txt").exists()
 
@@ -85,6 +85,6 @@ def test_backup_hook_files_are_ignored(tmp_path):
         "import sys\nsys.exit(1)\n", encoding="utf-8"
     )
 
-    project_dir = generate(repo, CONTEXT, tmp_path / "out")
+    project_dir = forge(repo, CONTEXT, tmp_path / "out")
 
     assert (project_dir / "file.txt").exists()

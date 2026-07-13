@@ -19,9 +19,9 @@ uv add "fractal-forge @ git+ssh://git@github.com/Fractal-Forge/forge.git"
 ## Usage
 
 ```python
-from forge import generate
+from forge import forge
 
-project_dir = generate(
+project_dir = forge(
     template="path/to/v1/templates/project",  # contains the {{ ... }} dir
     context=project_context,                   # plain dict, passed verbatim
     output_dir="/tmp/out",
@@ -66,7 +66,7 @@ project/
 
 | Cookiecutter fork | Forge |
 |---|---|
-| `cookiecutter(template=...)` | `generate(template=...)` |
+| `cookiecutter(template=...)` | `forge(template=...)` |
 | `extra_context=` + `force_overwrite_context=True` | `context=` (passed verbatim) |
 | `cookiecutter.json` (empty) | removed entirely |
 | `{{ cookiecutter.* }}` hardcoded | `context_key=` parameter |

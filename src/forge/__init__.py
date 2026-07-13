@@ -15,12 +15,12 @@ from forge.exceptions import (
     UndefinedVariableInTemplateError,
     UnknownExtensionError,
 )
-from forge.generate import generate
+from forge.main import forge
 
 __version__ = "0.1.0"
 
 __all__ = [
-    "generate",
+    "forge",
     "ForgeError",
     "TemplateDirNotFoundError",
     "AmbiguousTemplateDirError",

@@ -141,7 +141,7 @@ def _run_hook_guarded(
         raise
 
 
-def generate(
+def forge(
     template,
     context,
     output_dir=".",
