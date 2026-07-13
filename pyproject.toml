@@ -1,0 +1,32 @@
+[project]
+name = "fractal-forge"
+version = "0.1.0"
+description = "Minimal Jinja2 template rendering engine for Fractal Forge generator templates"
+readme = "README.md"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+authors = [{ name = "Douwe van der Meij", email = "douwe@karibu-online.nl" }]
+requires-python = ">=3.10"
+dependencies = [
+    "jinja2>=3.1,<4",
+    "binaryornot>=0.4.4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/forge"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
