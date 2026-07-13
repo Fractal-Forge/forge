@@ -35,9 +35,7 @@ def test_renders_project_tree(tmp_path):
     repo = make_repo(tmp_path)
     out = tmp_path / "out"
 
-    project_dir = forge(
-        repo, CONTEXT, out, remove_extension=".jinja2", context_key="forge"
-    )
+    project_dir = forge(repo, CONTEXT, out, context_key="forge")
 
     assert project_dir == out / "demo"
     assert (project_dir / "README.md").read_text() == "# Demo\n"
@@ -56,28 +54,48 @@ def test_custom_context_key(tmp_path):
     repo = make_repo(tmp_path, key="cookiecutter")
     out = tmp_path / "out"
 
-    project_dir = forge(
-        repo, CONTEXT, out, context_key="cookiecutter", remove_extension=".jinja2"
-    )
+    project_dir = forge(repo, CONTEXT, out, context_key="cookiecutter")
 
     assert (project_dir / "README.md").read_text() == "# Demo\n"
 
 
-def test_remove_extension_only_strips_suffix(tmp_path):
+def test_remove_file_extension_defaults_to_jinja2(tmp_path):
+    repo = make_repo(tmp_path)
+
+    project_dir = forge(repo, CONTEXT, tmp_path / "out")
+
+    assert (project_dir / "README.md").exists()
+    assert not (project_dir / "README.md.jinja2").exists()
+
+
+def test_remove_file_extension_only_strips_suffix(tmp_path):
     repo = make_repo(tmp_path)
     tdir = repo / "{{forge.project_id}}"
     (tdir / "config.jinja2.md").write_text("keep name", encoding="utf-8")
 
-    project_dir = forge(repo, CONTEXT, tmp_path / "out", remove_extension=".jinja2")
+    project_dir = forge(repo, CONTEXT, tmp_path / "out")
 
     assert (project_dir / "README.md").exists()
     assert (project_dir / "config.jinja2.md").exists()
 
 
-def test_without_remove_extension_names_are_untouched(tmp_path):
+def test_remove_file_extension_accepts_a_tuple(tmp_path):
+    repo = make_repo(tmp_path)
+    tdir = repo / "{{forge.project_id}}"
+    (tdir / "short.j2").write_text("short form", encoding="utf-8")
+
+    project_dir = forge(
+        repo, CONTEXT, tmp_path / "out", remove_file_extension=(".jinja2", ".j2")
+    )
+
+    assert (project_dir / "README.md").exists()
+    assert (project_dir / "short").exists()
+
+
+def test_remove_file_extension_none_disables_stripping(tmp_path):
     repo = make_repo(tmp_path)
 
-    project_dir = forge(repo, CONTEXT, tmp_path / "out")
+    project_dir = forge(repo, CONTEXT, tmp_path / "out", remove_file_extension=None)
 
     assert (project_dir / "README.md.jinja2").exists()
 
@@ -131,10 +149,8 @@ def test_overwrite_if_exists_rerenders(tmp_path):
     repo = make_repo(tmp_path)
     out = tmp_path / "out"
 
-    forge(repo, CONTEXT, out, remove_extension=".jinja2")
-    project_dir = forge(
-        repo, CONTEXT, out, remove_extension=".jinja2", overwrite_if_exists=True
-    )
+    forge(repo, CONTEXT, out)
+    project_dir = forge(repo, CONTEXT, out, overwrite_if_exists=True)
 
     assert (project_dir / "README.md").read_text() == "# Demo\n"
 
@@ -142,14 +158,13 @@ def test_overwrite_if_exists_rerenders(tmp_path):
 def test_skip_if_file_exists_preserves_content(tmp_path):
     repo = make_repo(tmp_path)
     out = tmp_path / "out"
-    project_dir = forge(repo, CONTEXT, out, remove_extension=".jinja2")
+    project_dir = forge(repo, CONTEXT, out)
     (project_dir / "README.md").write_text("hand-edited", encoding="utf-8")
 
     forge(
         repo,
         CONTEXT,
         out,
-        remove_extension=".jinja2",
         overwrite_if_exists=True,
         skip_if_file_exists=True,
     )

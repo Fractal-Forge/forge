@@ -35,6 +35,15 @@ def _is_copy_only_path(path, copy_without_render):
     return any(fnmatch.fnmatch(path, pattern) for pattern in copy_without_render)
 
 
+def _normalize_extensions(remove_file_extension):
+    """Coerce a str/list/tuple/falsy extension spec into a tuple of suffixes."""
+    if not remove_file_extension:
+        return ()
+    if isinstance(remove_file_extension, str):
+        return (remove_file_extension,)
+    return tuple(remove_file_extension)
+
+
 def _render_and_create_dir(
     dirname, jinja_context, output_dir, env, overwrite_if_exists
 ):
@@ -69,7 +78,7 @@ def _generate_file(
     infile,
     jinja_context,
     env,
-    remove_extension,
+    remove_file_extension,
     skip_if_file_exists,
     newline_override,
 ):
@@ -81,8 +90,9 @@ def _generate_file(
     logger.debug("Processing file %s", infile)
 
     outfile_rendered = env.from_string(infile).render(**jinja_context)
-    if remove_extension and os.path.splitext(outfile_rendered)[-1] == remove_extension:
-        outfile_rendered = outfile_rendered[: -len(remove_extension)]
+    file_ext = os.path.splitext(outfile_rendered)[-1]
+    if file_ext and file_ext in remove_file_extension:
+        outfile_rendered = outfile_rendered[: -len(file_ext)]
     outfile = os.path.join(project_dir, outfile_rendered)
 
     # A conditional file name (`{% if ... %}name{% endif %}`) that rendered
@@ -148,7 +158,7 @@ def forge(
     *,
     context_key="forge",
     extensions=(),
-    remove_extension="",
+    remove_file_extension=".jinja2",
     copy_without_render=(),
     overwrite_if_exists=False,
     skip_if_file_exists=False,
@@ -166,8 +176,9 @@ def forge(
     :param output_dir: Where to output the generated project dir into.
     :param context_key: Top-level Jinja variable name for the context.
     :param extensions: Jinja2 extensions, as import-path strings or classes.
-    :param remove_extension: Strip this extension from rendered file names,
-        e.g. ``".jinja2"``.
+    :param remove_file_extension: Strip this extension from rendered file
+        names, e.g. ``".jinja2"`` (the default), or any of several, e.g.
+        ``(".jinja2", ".j2")``. Pass ``None`` or ``()`` to disable stripping.
     :param copy_without_render: fnmatch patterns (relative to the template
         directory) for files/dirs to copy verbatim instead of rendering.
     :param overwrite_if_exists: Render into the output directory even if it
@@ -186,6 +197,8 @@ def forge(
     template_dir = find_template(repo_dir)
     hooks_dir = os.path.join(repo_dir, "hooks")
     logger.debug("Generating project from %s...", template_dir)
+
+    remove_file_extension = _normalize_extensions(remove_file_extension)
 
     jinja_context = {context_key: context}
     env = create_environment(extensions=extensions, env_options=env_options)
@@ -283,7 +296,7 @@ def forge(
                         infile,
                         jinja_context,
                         env,
-                        remove_extension,
+                        remove_file_extension,
                         skip_if_file_exists,
                         newline,
                     )

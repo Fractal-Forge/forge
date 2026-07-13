@@ -27,7 +27,7 @@ project_dir = forge(
     output_dir="/tmp/out",
     context_key="forge",                       # {{ forge.* }} in templates
     extensions=[StringOperationsExtension],    # classes or import-path strings
-    remove_extension=".jinja2",
+    remove_file_extension=".jinja2",           # default; also accepts a tuple, e.g. (".jinja2", ".j2")
     overwrite_if_exists=True,
 )
 ```
@@ -71,7 +71,7 @@ project/
 | `cookiecutter.json` (empty) | removed entirely |
 | `{{ cookiecutter.* }}` hardcoded | `context_key=` parameter |
 | `_extensions` context key | `extensions=` parameter |
-| `remove_template_extension=` | `remove_extension=` |
+| `remove_template_extension=` | `remove_file_extension=` (now defaults to `.jinja2`; also accepts a tuple) |
 | `_copy_without_render` context key | `copy_without_render=` parameter |
 | `_new_lines` context key | `newline=` parameter |
 | `_jinja2_env_vars` context key | `env_options=` parameter |
