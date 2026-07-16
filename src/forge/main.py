@@ -166,6 +166,7 @@ def forge(
     keep_project_on_failure=False,
     newline=None,
     env_options=None,
+    sandboxed=False,
 ):
     """Render a project from a template directory into ``output_dir``.
 
@@ -185,11 +186,15 @@ def forge(
         already exists.
     :param skip_if_file_exists: Skip files that already exist in the output.
     :param accept_hooks: Run ``pre_gen_project``/``post_gen_project`` hooks.
+        Set ``False`` for template sources you don't trust to run code.
     :param keep_project_on_failure: Keep the generated directory even when
         generation fails.
     :param newline: Force this newline style on rendered files instead of
         detecting it per template file.
     :param env_options: Extra keyword arguments for ``jinja2.Environment``.
+    :param sandboxed: Render with ``jinja2.sandbox.SandboxedEnvironment``
+        instead of the plain ``Environment``. Use alongside
+        ``accept_hooks=False`` for template sources you don't trust.
     :return: Path to the generated project directory.
     """
     repo_dir = os.path.abspath(template)
@@ -201,7 +206,9 @@ def forge(
     remove_file_extension = _normalize_extensions(remove_file_extension)
 
     jinja_context = {context_key: context}
-    env = create_environment(extensions=extensions, env_options=env_options)
+    env = create_environment(
+        extensions=extensions, env_options=env_options, sandboxed=sandboxed
+    )
 
     unrendered_dir = os.path.basename(template_dir)
     try:

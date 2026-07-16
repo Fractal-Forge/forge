@@ -263,3 +263,34 @@ def test_unknown_extension_raises(tmp_path):
 
     with pytest.raises(UnknownExtensionError):
         forge(repo, CONTEXT, tmp_path / "out", extensions=["no.such.Extension"])
+
+
+def test_sandboxed_renders_normal_templates(tmp_path):
+    repo = make_repo(tmp_path)
+
+    project_dir = forge(repo, CONTEXT, tmp_path / "out", sandboxed=True)
+
+    assert (project_dir / "README.md").read_text() == "# Demo\n"
+
+
+def test_sandboxed_blocks_gadget_chain_attribute_access(tmp_path):
+    repo = make_repo(tmp_path)
+    (repo / "{{forge.project_id}}" / "pwn.txt").write_text(
+        "{{ ''.__class__.__mro__[1].__subclasses__() }}", encoding="utf-8"
+    )
+
+    from jinja2.exceptions import SecurityError
+
+    with pytest.raises(SecurityError):
+        forge(repo, CONTEXT, tmp_path / "out", sandboxed=True)
+
+
+def test_unsandboxed_allows_gadget_chain_attribute_access(tmp_path):
+    repo = make_repo(tmp_path)
+    (repo / "{{forge.project_id}}" / "pwn.txt").write_text(
+        "{{ ''.__class__.__mro__[1].__subclasses__()|length > 0 }}", encoding="utf-8"
+    )
+
+    project_dir = forge(repo, CONTEXT, tmp_path / "out")
+
+    assert (project_dir / "pwn.txt").read_text() == "True"
