@@ -12,10 +12,18 @@ dependencies = [
     "binaryornot>=0.4.4",
 ]
 
+[project.optional-dependencies]
+# The StringOperationsExtension `slug` filter needs python-slugify. Kept optional
+# so the core engine stays dependency-thin: `pip install fractal-forge[filters]`.
+filters = [
+    "python-slugify>=8",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=8",
     "ruff>=0.8",
+    "python-slugify>=8",
 ]
 
 [build-system]
