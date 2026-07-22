@@ -15,12 +15,14 @@ from forge.exceptions import (
     UndefinedVariableInTemplateError,
     UnknownExtensionError,
 )
+from forge.ext import StringOperationsExtension
 from forge.main import forge
 
 __version__ = "0.1.0"
 
 __all__ = [
     "forge",
+    "StringOperationsExtension",
     "ForgeError",
     "TemplateDirNotFoundError",
     "AmbiguousTemplateDirError",
